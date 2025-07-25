@@ -1,0 +1,37 @@
+chunking:
+  chunk_overlap: 200
+  chunk_size: 1000
+  chunk_strategy: fixed_size
+data_dir: data
+embedding:
+  device: auto
+  max_length: 512
+  model_name: BAAI/bge-small-en
+  normalize: true
+evaluation:
+  metrics:
+  - f1
+  - exact_match
+  - bleu
+  - rouge
+  results_dir: experiments/results
+  save_results: true
+  test_dataset: data/test_qa.json
+experiments_dir: experiments
+llm:
+  device: auto
+  max_length: 2048
+  model_name: microsoft/DialoGPT-medium
+  temperature: 0.7
+  top_p: 0.9
+log_dir: experiments/logs
+retrieval:
+  reranker_model: BAAI/bge-reranker-base
+  similarity_threshold: 0.7
+  top_k: 5
+  use_reranker: false
+vector_db:
+  collection_name: documents
+  db_type: chroma
+  distance_metric: cosine
+  persist_directory: data/embeddings
