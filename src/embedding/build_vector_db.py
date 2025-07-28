@@ -10,11 +10,8 @@ def load_chunks(json_path):
         return json.load(f)
 
 def build_chroma_db(chunks, persist_dir="data/embeddings/contract_legal"):
-    # ChromaDB 세팅
-    client = chromadb.Client(Settings(
-        persist_directory=persist_dir,
-        anonymized_telemetry=False
-    ))
+    # ChromaDB 세팅 - PersistentClient 사용
+    client = chromadb.PersistentClient(path=persist_dir)
     collection = client.get_or_create_collection("contract_legal_docs")
 
     # 임베딩 모델 로드
@@ -32,7 +29,6 @@ def build_chroma_db(chunks, persist_dir="data/embeddings/contract_legal"):
             ids=[chunk_id],
             embeddings=[embedding]
         )
-    client.persist()
     print(f"ChromaDB built at {persist_dir}")
 
 if __name__ == "__main__":
