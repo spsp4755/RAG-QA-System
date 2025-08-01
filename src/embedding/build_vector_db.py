@@ -1,36 +1,45 @@
 import json
 import os
+import time
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
 
-def load_chunks(json_path):
-    with open(json_path, encoding="utf-8") as f:
-        return json.load(f)
+# 1. 데이터 로드
+with open("data/processed/knowledge_qa.json", "r", encoding="utf-8") as f:
+    qa_data = json.load(f)
 
-def build_chroma_db(chunks, persist_dir="data/embeddings/contract_legal"):
-    # ChromaDB 세팅 - PersistentClient 사용
-    client = chromadb.PersistentClient(path=persist_dir)
-    collection = client.get_or_create_collection("contract_legal_docs")
-
-    # 임베딩 모델 로드
+# 2. 임베딩 모델 준비
     model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
-    # 벡터DB에 저장
-    for chunk in tqdm(chunks, desc="Embedding and storing chunks"):
-        chunk_id = chunk["chunk_id"]
-        text = chunk["text"]
-        metadata = chunk["metadata"]
-        embedding = model.encode(text).tolist()
+# 3. ChromaDB 준비
+os.makedirs("data/embeddings/knowledge_qa", exist_ok=True)
+client = chromadb.PersistentClient(path="data/embeddings/knowledge_qa")
+collection = client.get_or_create_collection("knowledge_qa")
+
+# 4. 데이터 추가
+for idx, qa in tqdm(enumerate(qa_data), total=len(qa_data), desc="Embedding and storing"):
+    context = qa["context"]
+    question = qa["question"]
+    answer = qa["answer"]
+    instruction = qa.get("instruction", "")
+    metadata = qa.get("metadata", {}).copy()
+    # 메타데이터에 question, answer, instruction도 추가
+    metadata.update({
+        "question": question,
+        "answer": answer,
+        "instruction": instruction
+    })
+    # context 임베딩
+    embedding = model.encode([context])[0]
         collection.add(
-            documents=[text],
-            metadatas=[metadata],
-            ids=[chunk_id],
-            embeddings=[embedding]
-        )
-    print(f"ChromaDB built at {persist_dir}")
+        ids=[str(idx)],
+        embeddings=[embedding],
+        documents=[context],
+        metadatas=[metadata]
+    )
 
 if __name__ == "__main__":
-    chunks = load_chunks("data/processed/contract_legal_chunks.json")
-    build_chroma_db(chunks)
+    start = time.time()
+    print(f"총 소요 시간: {time.time() - start:.2f}초")

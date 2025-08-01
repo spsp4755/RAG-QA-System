@@ -9,10 +9,10 @@ from chromadb.config import Settings
 class SearchSystem:
     """ChromaDB 기반 검색 시스템"""
     
-    def __init__(self, persist_dir: str = "data/embeddings/contract_legal"):
+    def __init__(self, persist_dir: str = "data/embeddings/training_db"):
         self.persist_dir = persist_dir
         self.client = chromadb.PersistentClient(path=persist_dir)
-        self.collection = self.client.get_collection("contract_legal_docs")
+        self.collection = self.client.get_collection("training_knowledge_qa")
         self.embedding_model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
         
     def search(self, query: str, n_results: int = 5, filter_dict: Optional[Dict] = None) -> List[Dict]:

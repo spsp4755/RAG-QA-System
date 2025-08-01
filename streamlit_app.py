@@ -12,8 +12,8 @@ from src.rag_system import RAGSystem
 
 def main():
     st.set_page_config(
-        page_title="RAG 법률 문서 QA 시스템",
-        page_icon="⚖️",
+        page_title="RAG 지식재산권 QA 시스템",
+        page_icon="🧠",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -21,133 +21,180 @@ def main():
     # Custom CSS for better styling
     st.markdown("""
     <style>
-    /* 전체 텍스트 색상 개선 */
-    .stMarkdown, .stText, .stTextInput, .stTextArea {
-        color: #333333 !important;
+    /* 전체 배경 및 기본 스타일 */
+    .main {
+        background-color: #f5f5f5;
     }
     
-    /* 헤더 스타일 */
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        text-align: center;
-        margin-bottom: 2rem;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    .sub-header {
-        font-size: 1.3rem;
-        color: #555;
-        text-align: center;
-        margin-bottom: 2rem;
-        font-weight: 500;
-    }
-    
-    /* 메트릭 카드 */
-    .metric-card {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
-        border: 1px solid #e9ecef;
-    }
-    
-    /* 답변 박스 - 가독성 개선 */
-    .answer-box {
-        background-color: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #1f77b4;
-        margin: 1rem 0;
-        color: #333333 !important;
-        font-size: 1.1rem;
-        line-height: 1.6;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* 문서 박스 */
-    .document-box {
+    .main .block-container {
         background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin: 1rem;
+    }
+    
+    /* 헤더 스타일 - 더 명확하게 */
+    .main-header {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 1.5rem;
         padding: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid #dee2e6;
-        margin: 0.5rem 0;
-        color: #333333 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
-    /* 사이드바 개선 */
+    .sub-header {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 400;
+    }
+    
+    /* 사이드바 스타일 */
     .css-1d391kg {
-        background-color: #f8f9fa;
+        background-color: #2c3e50;
+        color: white;
     }
     
-    /* 버튼 스타일 */
+    /* 입력 필드 스타일 */
+    .stTextArea > div > div > textarea {
+        background-color: #ffffff !important;
+        color: #2c3e50 !important;
+        border: 2px solid #e0e0e0 !important;
+        border-radius: 8px !important;
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+    
+    .stTextArea > div > div > textarea:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+    }
+    
+    /* 버튼 스타일 - 더 명확하게 */
     .stButton > button {
-        background-color: #1f77b4;
-        color: white;
-        border: none;
-        border-radius: 0.3rem;
-        padding: 0.5rem 1rem;
-        font-weight: 500;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 12px 24px !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease !important;
     }
     
     .stButton > button:hover {
-        background-color: #1565c0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
     }
     
-    /* 입력 필드 개선 */
-    .stTextInput > div > div > input {
-        color: #333333 !important;
-        background-color: #ffffff !important;
+    /* 답변 박스 - 훨씬 명확하게 */
+    .answer-box {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        border-left: 6px solid #667eea;
+        margin: 1.5rem 0;
+        color: #2c3e50 !important;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        font-weight: 500;
     }
     
-    .stTextArea > div > div > textarea {
-        color: #333333 !important;
-        background-color: #ffffff !important;
+    /* 문서 박스 - 개선 */
+    .document-box {
+        background-color: #ffffff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        margin: 1rem 0;
+        color: #2c3e50 !important;
+        font-size: 1rem;
+        line-height: 1.6;
     }
     
     /* 확장 가능한 섹션 */
     .streamlit-expanderHeader {
-        background-color: #f8f9fa !important;
-        color: #333333 !important;
-        font-weight: 600;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        color: #2c3e50 !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
     }
     
-    /* 데이터프레임 개선 */
-    .stDataFrame {
-        color: #333333 !important;
-    }
-    
-    /* 성능 지표 개선 */
+    /* 메트릭 스타일 */
     .stMetric {
-        color: #333333 !important;
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin: 0.5rem 0;
     }
     
-    /* 전체 배경색 개선 */
-    .main .block-container {
+    /* 데이터프레임 스타일 */
+    .stDataFrame {
         background-color: #ffffff;
-        padding: 2rem;
+        border-radius: 8px;
+        overflow: hidden;
     }
     
-    /* 텍스트 가독성 전역 개선 */
-    p, div, span, label {
-        color: #333333 !important;
+    /* 전체 텍스트 색상 통일 */
+    .stMarkdown, .stText, p, div, span, label, h1, h2, h3, h4, h5, h6 {
+        color: #2c3e50 !important;
+    }
+    
+    /* 섹션 제목 스타일 */
+    h3 {
+        color: #34495e !important;
+        font-weight: 600 !important;
+        margin-top: 2rem !important;
+        margin-bottom: 1rem !important;
+        padding-bottom: 0.5rem !important;
+        border-bottom: 2px solid #e9ecef !important;
+    }
+    
+    /* 성능 지표 섹션 */
+    .performance-section {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin: 1rem 0;
+    }
+    
+    /* 푸터 스타일 */
+    .footer {
+        text-align: center;
+        color: #7f8c8d;
+        margin-top: 3rem;
+        padding: 1rem;
+        border-top: 1px solid #e9ecef;
     }
     </style>
     """, unsafe_allow_html=True)
     
     # Header
-    st.markdown('<h1 class="main-header">⚖️ RAG 법률 문서 QA 시스템</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">AI Hub 법률 문서 기반 지능형 질의응답 시스템</p>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">🧠 RAG 지식재산권 QA 시스템</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">AI Hub 지식재산권법 데이터 기반 지능형 질의응답 시스템</p>', unsafe_allow_html=True)
     
     # Sidebar
     with st.sidebar:
         st.header("🔧 시스템 설정")
         
-        # RAG 시스템 초기화
+        # RAG 시스템 초기화 (training_db 사용)
         if 'rag_system' not in st.session_state:
             with st.spinner("RAG 시스템 초기화 중..."):
-                st.session_state.rag_system = RAGSystem(use_llm=False)
+                st.session_state.rag_system = RAGSystem(
+                    persist_dir="data/embeddings/training_db",
+                    use_llm=True
+                )  
         
         # 시스템 정보 표시
         info = st.session_state.rag_system.get_system_info()
@@ -164,19 +211,19 @@ def main():
         st.markdown("### 🔍 필터 옵션")
         filter_doc_type = st.selectbox(
             "문서 타입 필터",
-            ["전체", "1006", "1032", "1037", "1039"],
-            help="특정 문서 타입으로 검색 범위를 제한합니다"
+            ["전체", "특허권", "상표권", "저작권", "디자인권"],
+            help="특정 지식재산권 분야로 검색 범위를 제한합니다"
         )
         
         # 예시 질문들
         st.markdown("### 💡 예시 질문")
         example_questions = [
-            "계약서의 기본 조항은 무엇인가요?",
-            "임대차 계약에서 임차인의 의무는?",
-            "계약 해지 조건에 대해 알려주세요",
-            "법적 책임과 의무는 어떻게 되나요?",
-            "합의를 해지하려면 어떻게 해야하나요?",
-            "주주들의 권리와 의무는?"
+            "특허권의 보호기간은 얼마나 되나요?",
+            "상표권 침해의 구체적인 행위는 무엇인가요?",
+            "저작권의 발생 시점은 언제인가요?",
+            "디자인권의 등록 요건은 무엇인가요?",
+            "특허 출원 절차는 어떻게 되나요?",
+            "상표 등록의 효과는 무엇인가요?"
         ]
         
         for i, question in enumerate(example_questions):
@@ -192,10 +239,10 @@ def main():
         
         # 질문 입력
         query = st.text_area(
-            "법률 문서에 대해 궁금한 점을 질문해주세요:",
+            "지식재산권에 대해 궁금한 점을 질문해주세요:",
             value=st.session_state.get('query', ''),
             height=100,
-            placeholder="예: 계약서의 기본 조항은 무엇인가요?"
+            placeholder="예: 특허권의 보호기간은 얼마나 되나요?"
         )
         
         # 검색 버튼
@@ -215,7 +262,8 @@ def main():
         # 필터 설정
         filter_dict = None
         if filter_doc_type != "전체":
-            filter_dict = {"doc_type": filter_doc_type}
+            # 지식재산권 분야별 필터링 (메타데이터의 instruction 필드 활용)
+            filter_dict = {"instruction": {"$contains": filter_doc_type}}
         
         # 검색 실행
         if search_button and query.strip():
@@ -251,21 +299,6 @@ def main():
         st.markdown("**🤖 생성된 답변:**")
         st.markdown(f'<div class="answer-box">{result["answer"]}</div>', unsafe_allow_html=True)
         
-        # 참고 문서
-        st.markdown("### 📄 참고 문서")
-        
-        for i, doc in enumerate(result['retrieved_docs'], 1):
-            with st.expander(f"📄 문서 {i} (유사도: {1-doc['distance']:.2%})"):
-                st.markdown(f"**📝 문서 내용:**")
-                st.markdown(f'<div class="document-box">{doc["text"]}</div>', unsafe_allow_html=True)
-                
-                st.markdown("**🏷️ 메타데이터:**")
-                metadata_df = st.dataframe(
-                    pd.DataFrame([doc['metadata']]).T,
-                    use_container_width=True,
-                    hide_index=False
-                )
-        
         # 결과 다운로드
         st.markdown("### 💾 결과 다운로드")
         result_json = json.dumps(result, ensure_ascii=False, indent=2)
@@ -281,8 +314,8 @@ def main():
     st.markdown(
         """
         <div style='text-align: center; color: #666;'>
-        <p>🔧 RAG QA 시스템 | AI Hub 법률 문서 기반 | Made with Streamlit</p>
-        <p>📊 총 551,750개 문서 | ⚡ 빠른 검색 | 🤖 지능형 답변</p>
+        <p>🧠 RAG 지식재산권 QA 시스템 | AI Hub 지식재산권법 데이터 기반 | Made with Streamlit</p>
+        <p>📊 지식재산권법 데이터 | ⚡ 빠른 검색 | 🤖 지능형 답변</p>
         </div>
         """,
         unsafe_allow_html=True

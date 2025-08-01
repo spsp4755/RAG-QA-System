@@ -11,9 +11,9 @@ class RAGSystem:
     """완전한 RAG (Retrieval-Augmented Generation) 시스템"""
     
     def __init__(self, 
-                 persist_dir: str = "data/embeddings/contract_legal",
-                 use_llm: bool = False,
-                 llm_model: str = "microsoft/DialoGPT-medium"):
+                 persist_dir: str = "data/embeddings/training_db",
+                 use_llm: bool = True,
+                 llm_model: str = "EleutherAI/polyglot-ko-1.3b"):
         """
         RAG 시스템 초기화
         
@@ -123,11 +123,11 @@ class RAGSystem:
 
 def interactive_qa():
     """대화형 질의응답 시스템"""
-    print("🎯 RAG 기반 법률 문서 QA 시스템")
+    print("🎯 RAG 기반 지식재산권 QA 시스템")
     print("=" * 50)
     
     # RAG 시스템 초기화
-    rag_system = RAGSystem(use_llm=False)  # 간단한 시스템으로 시작
+    rag_system = RAGSystem(use_llm=True)  # 실제 LLM 사용
     
     # 시스템 정보 출력
     info = rag_system.get_system_info()
@@ -137,10 +137,10 @@ def interactive_qa():
     print()
     
     print("💡 질문 예시:")
-    print("  - 계약서의 기본 조항은 무엇인가요?")
-    print("  - 임대차 계약에서 임차인의 의무는?")
-    print("  - 계약 해지 조건에 대해 알려주세요")
-    print("  - 법적 책임과 의무는 어떻게 되나요?")
+    print("  - 특허권의 보호기간은 얼마나 되나요?")
+    print("  - 상표권 침해의 구체적인 행위는 무엇인가요?")
+    print("  - 저작권의 발생 시점은 언제인가요?")
+    print("  - 디자인권의 등록 요건은 무엇인가요?")
     print()
     
     while True:
@@ -195,9 +195,9 @@ def test_rag_system():
     
     # 테스트 질문들
     test_queries = [
-        "계약서의 기본 조항",
-        "임대차 계약 조건",
-        "법적 책임과 의무"
+        "특허권의 보호기간",
+        "상표권 침해 행위",
+        "저작권의 발생 시점"
     ]
     
     for query in test_queries:
