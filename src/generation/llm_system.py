@@ -8,7 +8,7 @@ from sentence_transformers import util
 class LLMSystem:
     """로컬 LLM 기반 답변 생성 시스템"""
     
-    def __init__(self, model_name: str = "EleutherAI/polyglot-ko-1.3b"):
+    def __init__(self, model_name: str = "beomi/gemma-ko-2b"):
         """
         LLM 시스템 초기화
         

@@ -25,14 +25,14 @@ def run_evaluation():
         
         # LLM 시스템 초기화
         print("🤖 LLM 시스템 초기화 중...")
-        llm_system = LLMSystem("EleutherAI/polyglot-ko-1.3b")
+        llm_system = LLMSystem("beomi/gemma-ko-2b")
         
         # 평가 실행 (샘플 크기: 20개)
         print("🔍 평가 실행 중...")
         results = evaluator.evaluate_rag_system(llm_system, sample_size=20)
         
         # 결과 저장
-        model_name = "EleutherAI_polyglot_ko_1_3b"
+        model_name = "beomi_gemma_ko_2b"
         filename = evaluator.save_evaluation_results(results, model_name)
         
         # 결과 요약 출력
