@@ -12,6 +12,9 @@
 │   ├── 📁 raw/           # 원본 법률 문서
 │   ├── 📁 processed/     # 전처리된 데이터
 │   └── 📁 embeddings/    # 벡터 데이터베이스
+│       ├── 📁 complete_db/        # 다국어 임베딩 벡터 DB
+│       ├── 📁 korean_sbert_db/    # 한국어 SBERT 벡터 DB
+│       └── 📁 training_db/        # 학습용 벡터 DB
 ├── 📁 src/
 │   ├── 📁 embedding/     # 임베딩 모델 및 벡터 DB 구축
 │   ├── 📁 rag/          # RAG 시스템 핵심 로직
@@ -22,9 +25,12 @@
 
 ## 🔧 기술 스택
 
-### 임베딩 모델
-- **모델**: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
-- **벡터 DB**: ChromaDB
+### 임베딩 모델 (실험 대상)
+1. **다국어 모델**: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+2. **한국어 특화 모델**: `jhgan/ko-sroberta-multitask`
+
+### 벡터 DB
+- **ChromaDB**: 지속적 저장소 기반 벡터 데이터베이스
 - **언어**: 한국어 다국어 지원
 
 ### LLM 모델 (실험 대상)
@@ -37,9 +43,13 @@
 ### 평가 환경
 - **평가 데이터**: Validation 데이터 20개 샘플
 - **평가 지표**: BLEU, ROUGE-1/2/L, METEOR, 종합 점수
-- **공통 임베딩 모델**: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+- **평가 방식**: 동일한 LLM 모델로 다른 벡터DB 비교
 
-### 모델별 성능 비교
+## 🔍 벡터DB 성능 비교 실험
+
+### 실험 1: 다국어 임베딩 모델 (complete_db)
+
+#### 모델별 성능 비교
 
 | 모델 | 성공률 | BLEU | ROUGE-1 | ROUGE-2 | ROUGE-L | METEOR | 종합점수 | 생성시간 |
 |------|--------|------|---------|---------|---------|--------|----------|----------|
@@ -47,22 +57,62 @@
 | **EleutherAI/polyglot-ko-1.3b** | 100% | 0.0033 | 0.0543 | 0.0083 | 0.0543 | 0.0288 | 0.0298 | 45.2초 |
 | **skt/kogpt2-base-v2** | 100% | 0.0026 | 0.0366 | 0.0000 | 0.0366 | 0.0297 | 0.0211 | 12.3초 |
 
-### 성능 분석
+### 실험 2: 한국어 SBERT 임베딩 모델 (korean_sbert_db)
 
-#### 🥇 최고 성능: beomi/gemma-ko-2b
-- **장점**: 가장 높은 종합 점수, ROUGE 점수 우수
-- **단점**: 생성 시간이 매우 김 (148초)
-- **적용**: 프로덕션 환경 (성능 우선)
+#### 모델별 성능 비교
 
-#### 🥈 균형잡힌 성능: EleutherAI/polyglot-ko-1.3b
-- **장점**: 적절한 성능과 속도 균형
-- **단점**: 중간 수준의 성능
-- **적용**: 개발/테스트 환경
+| 모델 | 성공률 | BLEU | ROUGE-1 | ROUGE-2 | ROUGE-L | METEOR | 종합점수 | 생성시간 |
+|------|--------|------|---------|---------|---------|--------|----------|----------|
+| **beomi/gemma-ko-2b** | 100% | 0.0036 | 0.0214 | 0.0167 | 0.0214 | 0.0227 | **0.0172** | 114.0초 |
+| **EleutherAI/polyglot-ko-1.3b** | 100% | 0.0017 | 0.0125 | 0.0000 | 0.0125 | 0.0104 | 0.0074 | 41.0초 |
+| **skt/kogpt2-base-v2** | 100% | 0.0022 | 0.0254 | 0.0000 | 0.0254 | 0.0207 | 0.0147 | 11.7초 |
 
-#### 🥉 빠른 속도: skt/kogpt2-base-v2
-- **장점**: 가장 빠른 생성 속도 (12.3초)
-- **단점**: 가장 낮은 성능
-- **적용**: 빠른 프로토타이핑
+## 📈 벡터DB 비교 분석
+
+### 성능 변화 요약
+
+| 모델 | 벡터DB | 종합점수 | ROUGE-1 | 생성시간 | 성능 변화 |
+|------|--------|----------|---------|----------|-----------|
+| **beomi/gemma-ko-2b** | complete_db | 0.0662 | 0.1393 | 148.0초 | **기준** |
+| **beomi/gemma-ko-2b** | korean_sbert_db | 0.0172 | 0.0214 | 114.0초 | **74% 감소** |
+| **EleutherAI/polyglot-ko-1.3b** | complete_db | 0.0298 | 0.0543 | 45.2초 | **기준** |
+| **EleutherAI/polyglot-ko-1.3b** | korean_sbert_db | 0.0074 | 0.0125 | 41.0초 | **75% 감소** |
+| **skt/kogpt2-base-v2** | complete_db | 0.0211 | 0.0366 | 12.3초 | **기준** |
+| **skt/kogpt2-base-v2** | korean_sbert_db | 0.0147 | 0.0254 | 11.7초 | **30% 감소** |
+
+### 주요 발견사항
+
+#### ✅ **긍정적 측면**
+- **생성 속도 개선**: 모든 모델에서 생성 시간이 단축됨 (5-23% 개선)
+- **ROUGE-2 점수**: `beomi/gemma-ko-2b`에서 상대적으로 덜 감소
+
+#### ❌ **부정적 측면**
+- **검색 품질 저하**: ROUGE-1 점수가 크게 감소 (77-85% 감소)
+- **전체 성능 저하**: 모든 모델에서 종합 점수가 감소
+
+### 성능 저하 원인 분석
+
+1. **임베딩 모델 호환성 문제**:
+   - `jhgan/ko-sroberta-multitask`가 법률 도메인에 최적화되지 않음
+   - 다국어 모델이 오히려 더 범용적인 검색 성능 제공
+
+2. **도메인 특화 문제**:
+   - 한국어 SBERT가 일반 한국어에 특화되어 법률 전문 용어 처리 능력 부족
+
+3. **벡터DB 구성 차이**:
+   - 한국어 SBERT DB의 문서 구성이 검색 품질에 부정적 영향
+
+## 🏆 최종 권장사항
+
+### 🥇 **현재 최적 설정**
+- **벡터DB**: `complete_db` (다국어 임베딩 모델)
+- **LLM 모델**: `beomi/gemma-ko-2b` (최고 성능)
+- **종합 점수**: 0.0662
+
+### 🎯 **개선 방향**
+1. **법률 도메인 특화 임베딩 모델 탐색**
+2. **벡터DB 구성 최적화**
+3. **하이브리드 검색 시스템 구현**
 
 ## 🚀 설치 및 실행
 
@@ -78,8 +128,11 @@ pip install -r requirements.txt
 
 ### 2. 데이터 준비
 ```bash
-# 벡터 데이터베이스 구축
+# 다국어 임베딩 벡터 DB 구축 (권장)
 python src/embedding/build_complete_vector_db.py
+
+# 한국어 SBERT 벡터 DB 구축 (실험용)
+python src/embedding/build_korean_sbert_vector_db.py
 ```
 
 ### 3. 시스템 실행
@@ -94,7 +147,7 @@ streamlit run streamlit_app.py
 ### 4. 성능 평가
 ```bash
 # 시스템 성능 평가
-python src/evaluation/rag_evaluator.py
+python run_evaluation.py
 ```
 
 ## 📁 주요 파일 구조
@@ -102,28 +155,31 @@ python src/evaluation/rag_evaluator.py
 ```
 📁 src/
 ├── 📄 embedding/
-│   ├── build_complete_vector_db.py    # 벡터 DB 구축
-│   └── build_training_vector_db.py    # 학습용 벡터 DB 구축
+│   ├── build_complete_vector_db.py        # 다국어 임베딩 벡터 DB 구축
+│   ├── build_korean_sbert_vector_db.py    # 한국어 SBERT 벡터 DB 구축
+│   └── build_training_vector_db.py        # 학습용 벡터 DB 구축
 ├── 📄 rag/
-│   ├── rag_qa_system.py              # RAG 시스템 메인
-│   └── context_retriever.py          # 컨텍스트 검색기
+│   ├── rag_qa_system.py                  # RAG 시스템 메인
+│   └── context_retriever.py              # 컨텍스트 검색기
 └── 📄 evaluation/
-    └── rag_evaluator.py              # 성능 평가기
+    ├── rag_evaluator.py                  # 성능 평가기
+    └── korean_sbert_rag_evaluator.py     # 한국어 SBERT 평가기
 
 📁 experiments/
-├── 📄 evaluation_results_*.json      # 실험 결과
-└── 📄 logs/                          # 실험 로그
+├── 📄 evaluation_results_*.json          # 실험 결과
+└── 📄 logs/                              # 실험 로그
 
 📁 data/
-├── 📄 embeddings/complete_db/        # ChromaDB 저장소
-└── 📄 processed/knowledge_qa.json    # 전처리된 데이터
+├── 📄 embeddings/complete_db/            # 다국어 임베딩 ChromaDB
+├── 📄 embeddings/korean_sbert_db/        # 한국어 SBERT ChromaDB
+└── 📄 processed/knowledge_qa.json        # 전처리된 데이터
 ```
 
 ## 🔍 주요 기능
 
 ### 1. 벡터 검색
 - 의미적 유사도 기반 문서 검색
-- 다국어 지원 임베딩 모델
+- 다국어/한국어 특화 임베딩 모델 지원
 - 실시간 검색 및 랭킹
 
 ### 2. 답변 생성
@@ -134,21 +190,26 @@ python src/evaluation/rag_evaluator.py
 ### 3. 성능 평가
 - 표준 NLP 평가 지표 사용
 - BLEU, ROUGE, METEOR 점수 계산
-- 상세한 실험 결과 분석
+- 벡터DB 간 성능 비교 분석
 
-## 📈 개선 방향
+## 📈 향후 개선 방향
 
-### 1. 모델 개선
-- 더 큰 한국어 특화 모델 테스트
-- 프롬프트 엔지니어링 강화
-- 답변 후처리 로직 추가
+### 1. 임베딩 모델 개선
+- 법률 도메인 특화 임베딩 모델 탐색
+- 고성능 다국어 모델 테스트 (`paraphrase-multilingual-mpnet-base-v2`)
+- 법률 문서로 fine-tuning된 모델 개발
 
-### 2. 시스템 최적화
-- 검색 품질 향상
-- 생성 속도 개선
-- 메모리 사용량 최적화
+### 2. 벡터DB 최적화
+- 문서 청킹 방식 개선
+- 컨텍스트 vs Q&A 쌍 비율 조정
+- 메타데이터 활용 최적화
 
-### 3. 평가 체계
+### 3. 하이브리드 시스템
+- 다중 벡터DB 조합 검색
+- 앙상블 기반 결과 선택
+- 가중치 기반 결합 시스템
+
+### 4. 평가 체계 고도화
 - 더 정교한 평가 지표 도입
 - 인간 평가와의 상관관계 분석
 - 도메인별 성능 분석

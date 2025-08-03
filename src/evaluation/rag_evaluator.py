@@ -32,10 +32,10 @@ except ImportError as e:
 class RAGEvaluator:
     """RAG 시스템 성능 평가기 (표준 지표만 사용)"""
 
-    def __init__(self, db_path: str = "data/embeddings/complete_db"):
+    def __init__(self, db_path: str = "data/embeddings/complete_db", collection_name: str = "complete_knowledge_qa"):
         self.db_path = db_path
         self.client = chromadb.PersistentClient(path=db_path)
-        self.collection = self.client.get_collection("complete_knowledge_qa")
+        self.collection = self.client.get_collection(collection_name)
         
         # 표준 평가 지표 초기화
         self.rouge_scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
@@ -50,7 +50,13 @@ class RAGEvaluator:
     def search_similar_docs(self, query: str, n_results: int = 3) -> List[Dict]:
         """Training DB에서 유사한 문서 검색"""
         from sentence_transformers import SentenceTransformer
-        embedding_model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        
+        # DB 경로에 따라 다른 임베딩 모델 사용
+        if "korean_sbert" in self.db_path:
+            embedding_model = SentenceTransformer("jhgan/ko-sroberta-multitask")
+        else:
+            embedding_model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+            
         query_embedding = embedding_model.encode(query).tolist()
 
         results = self.collection.query(
